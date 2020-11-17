@@ -1,6 +1,12 @@
-<h1>Hello! What is your name?</h1>
+<h1>Welcome to the message board!</h1>
 
-<form action="/greet" method="POST">
-  <input type="text" placeholder="what is your name" name="name" />
-  <button type="submit">say hello</button>
+<ul>
+  {{#each messages}}
+  <li>{{this}}</li>
+  {{/each}}
+</ul>
+
+<form action="/message" method="POST">
+  <input type="text" placeholder="message" name="message" />
+  <button type="submit">send</button>
 </form>

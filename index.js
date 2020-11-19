@@ -1,6 +1,7 @@
 import express from "express";
 import exphbs from "express-handlebars";
 import bcrypt from 'bcrypt';
+import { v4 as uuidv4 } from 'uuid';
 
 import sqlite3 from "sqlite3";
 import { open } from "sqlite";
@@ -27,11 +28,17 @@ app.get('/register', (req, res) => {
   res.render('register')
 })
 
+app.get('/login', (req, res) => {
+  res.render('login')
+})
+
 app.post('/register', async (req, res) => {
   const db = await dbPromise;
-  const username = req.body.username;
-  const email = req.body.email;
-  const password = req.body.password;
+  const {
+    username,
+    email,
+    password
+  } = req.body;
   const passwordHash = await bcrypt.hash(password, 10);
   try {
     await db.run('INSERT INTO Users (username, email, password) VALUES (?, ?, ?);',
@@ -41,6 +48,27 @@ app.post('/register', async (req, res) => {
     )
   } catch (e) {
     return res.render('register', { error: e })
+  }
+  res.redirect('/');
+})
+
+app.post('/login', async (req, res) => {
+  const db = await dbPromise;
+  const {
+    email,
+    password
+  } = req.body;
+  try {
+    const existingUser = await db.get("SELECT * FROM USERS WHERE email=?", email);
+    if (!existingUser) {
+      throw 'Incorrect login';
+    }
+    const passwordsMatch = await bcrypt.compare(password, existingUser.password);
+    if (!passwordsMatch) {
+      throw 'Incorrect login';
+    }
+  } catch (e) {
+    return res.render('login', { error: e })
   }
   res.redirect('/');
 })

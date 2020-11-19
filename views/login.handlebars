@@ -3,13 +3,11 @@
   {{error}}
 </div>
 {{/if}}
+<h1>Login</h1>
 
-<h1>Register</h1>
-<a href="/">home</a> <a href='/login'>login</a>
-
-<form action="/register" method="POST">
-  <input type="text" placeholder="username" name="username" />
+<a href="/register">register</a> <a href="/">home</a>
+<form action="/login" method="POST">
   <input type="email" placeholder="email" name="email" />
   <input type="password" placeholder="password" name="password" />
-  <button type="submit">register</button>
+  <button type="submit">login</button>
 </form>

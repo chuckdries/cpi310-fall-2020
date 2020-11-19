@@ -11,22 +11,33 @@ const dbPromise = open({
 
 const app = express();
 
-let messages = [];
-
 app.engine("handlebars", exphbs());
 app.set("view engine", "handlebars");
 
-app.use(express.urlencoded());
+app.use(express.urlencoded({ extended: false }));
 
-app.get("/", (req, res) => {
+app.get("/", async (req, res) => {
+  const db = await dbPromise;
+  const messages = await db.all('SELECT * FROM Messages');
   res.render("home", { messages });
 });
 
-app.post("/message", (req, res) => {
-  messages.push(req.body.message);
+app.post("/message", async (req, res) => {
+  const db = await dbPromise;
+  await db.run('INSERT INTO Messages (content) VALUES (?);', req.body.message)
   res.redirect("/");
 });
 
-app.listen(8080, () => {
-  console.log("listening on http://localhost:8080");
-});
+const setup = async () => {
+  const db = await dbPromise;
+  await db.migrate();
+
+  const messages = await db.all('SELECT * FROM Messages');
+  console.log('started with messages', messages);
+
+  app.listen(8080, () => {
+    console.log("listening on http://localhost:8080");
+  });
+}
+
+setup();

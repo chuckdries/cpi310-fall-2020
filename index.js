@@ -17,6 +17,7 @@ app.engine("handlebars", exphbs());
 app.set("view engine", "handlebars");
 
 app.use(express.urlencoded({ extended: false }));
+app.use('/static', express.static(__dirname + '/static'));
 
 app.get("/", async (req, res) => {
   const db = await dbPromise;

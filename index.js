@@ -31,7 +31,7 @@ app.use(async (req, res, next) => {
     const user = await lookupUserFromAuthToken(authToken)
     req.user = user;
   } catch (e) {
-    next(e);
+    return next(e);
   }
   next();
 })
@@ -117,6 +117,19 @@ app.post("/message", async (req, res) => {
     req.body.message, req.user.id)
   res.redirect("/");
 });
+
+app.use((req, res, next) => {
+  next({
+    status: 404,
+    message: `${req.path} not found`
+  })
+})
+
+app.use((err, req, res, next) => {
+  res.status(err.status || 500)
+  console.log(err);
+  res.render('errorPage', {error: err.message || err})
+})
 
 const setup = async () => {
   const db = await dbPromise;

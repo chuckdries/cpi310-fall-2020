@@ -40,14 +40,20 @@ app.get("/", async (req, res) => {
   const db = await dbPromise;
   console.log('request user', req.user);
   const messages = await db.all('SELECT * FROM Messages;');
-  res.render("home", { messages });
+  res.render("home", { messages, user: req.user });
 });
 
 app.get('/register', (req, res) => {
+  if (req.user) {
+    return res.redirect('/')
+  }
   res.render('register')
 })
 
 app.get('/login', (req, res) => {
+  if (req.user) {
+    return res.redirect('/')
+  }
   res.render('login')
 })
 
@@ -65,10 +71,13 @@ app.post('/register', async (req, res) => {
       email,
       passwordHash
     )
+    const user = await db.get('SELECT id FROM Users WHERE email=?', email);
+    const token = await grantAuthToken(user.id)
+    res.cookie('authToken', token);
+    res.redirect('/');
   } catch (e) {
     return res.render('register', { error: e })
   }
-  res.redirect('/');
 })
 
 app.post('/login', async (req, res) => {

@@ -31,7 +31,10 @@ app.use(async (req, res, next) => {
     const user = await lookupUserFromAuthToken(authToken)
     req.user = user;
   } catch (e) {
-    return next(e);
+    return next({
+      message: e,
+      status: 500
+    });
   }
   next();
 })
@@ -118,6 +121,7 @@ app.post("/message", async (req, res) => {
   res.redirect("/");
 });
 
+// throw 404 error - it's important this is _below_ all the normal routes
 app.use((req, res, next) => {
   next({
     status: 404,
@@ -125,6 +129,7 @@ app.use((req, res, next) => {
   })
 })
 
+// handle all errors
 app.use((err, req, res, next) => {
   res.status(err.status || 500)
   console.log(err);

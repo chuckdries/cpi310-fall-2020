@@ -110,10 +110,12 @@ app.post('/login', async (req, res) => {
   }
 })
 
-app.post("/message", async (req, res) => {
+app.post("/message", async (req, res, next) => {
   if (!req.user) {
-    res.status(401)
-    return res.send('must be logged in to post messages')
+    return next({
+      status: 401,
+      message: 'must be logged in to post'
+    })
   }
   const db = await dbPromise;
   await db.run('INSERT INTO Messages (content, authorId) VALUES (?, ?);',

@@ -12,6 +12,9 @@ export const grantAuthToken = async (userId) => {
 export const lookupUserFromAuthToken = async (authToken) => {
   const db = await dbPromise;
   const token = await db.get('SELECT * FROM AuthTokens WHERE token=?;', authToken);
+  if (!token) {
+    return null;
+  }
   const user = await db.get('SELECT id, email, username FROM Users WHERE id=?;', token.userId);
   return user;
 }

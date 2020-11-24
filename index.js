@@ -38,8 +38,12 @@ app.use(async (req, res, next) => {
 
 app.get("/", async (req, res) => {
   const db = await dbPromise;
-  console.log('request user', req.user);
-  const messages = await db.all('SELECT * FROM Messages;');
+  const messages = await db.all(`SELECT
+    Messages.id,
+    Messages.content,
+    Users.username as authorName
+  FROM Messages LEFT JOIN Users WHERE Messages.authorId = Users.id`);
+  console.log('messages', messages);
   res.render("home", { messages, user: req.user });
 });
 
@@ -104,17 +108,19 @@ app.post('/login', async (req, res) => {
 })
 
 app.post("/message", async (req, res) => {
+  if (!req.user) {
+    res.status(401)
+    return res.send('must be logged in to post messages')
+  }
   const db = await dbPromise;
-  await db.run('INSERT INTO Messages (content) VALUES (?);', req.body.message)
+  await db.run('INSERT INTO Messages (content, authorId) VALUES (?, ?);',
+    req.body.message, req.user.id)
   res.redirect("/");
 });
 
 const setup = async () => {
   const db = await dbPromise;
   await db.migrate();
-
-  const tokens = await db.all('SELECT * FROM AuthTokens');
-  console.log('started with tokens', tokens);
 
   app.listen(8080, () => {
     console.log("listening on http://localhost:8080");
